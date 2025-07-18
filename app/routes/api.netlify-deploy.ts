@@ -35,7 +35,9 @@ export async function action({ request }: ActionFunctionArgs) {
       });
 
       if (!createSiteResponse.ok) {
-        return json({ error: 'Failed to create site' }, { status: 400 });
+        const errorData = await createSiteResponse.json();
+        console.error('Failed to create Netlify site:', errorData);
+        return json({ error: `Failed to create site: ${errorData.message || 'Unknown error'}` }, { status: 400 });
       }
 
       const newSite = (await createSiteResponse.json()) as any;
@@ -127,7 +129,9 @@ export async function action({ request }: ActionFunctionArgs) {
     });
 
     if (!deployResponse.ok) {
-      return json({ error: 'Failed to create deployment' }, { status: 400 });
+      const errorData = await deployResponse.json();
+      console.error('Failed to create Netlify deployment:', errorData);
+      return json({ error: `Failed to create deployment: ${errorData.message || 'Unknown error'}` }, { status: 400 });
     }
 
     const deploy = (await deployResponse.json()) as any;

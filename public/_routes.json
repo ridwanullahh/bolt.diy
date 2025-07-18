@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/build/*", 
+    "/icons/*", 
+    "/*.ico", 
+    "/*.png", 
+    "/*.jpg", 
+    "/*.svg",
+    "/*.js",
+    "/*.css",
+    "/apple-touch-icon*",
+    "/favicon*",
+    "/logo*",
+    "/social_preview*"
+  ]
+}

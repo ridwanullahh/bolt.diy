@@ -8,14 +8,10 @@
       "runtime": "nodejs18.x"
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/build/(.*)",
-      "dest": "/build/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/build/server/index.js"
+      "source": "/((?!build/).*)",
+      "destination": "/build/server/index.js"
     }
   ],
   "headers": [

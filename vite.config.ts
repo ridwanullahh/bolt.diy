@@ -5,6 +5,8 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { optimizeCssModules } from 'vite-plugin-optimize-css-modules';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import * as dotenv from 'dotenv';
+import { copyFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
 
 dotenv.config();
 
@@ -38,6 +40,28 @@ export default defineConfig((config) => {
           }
 
           return null;
+        },
+      },
+      // Copy Cloudflare Pages configuration files
+      {
+        name: 'copy-cf-pages-config',
+        writeBundle() {
+          const configFiles = ['_routes.json', '_redirects', '_headers'];
+          const buildDir = resolve(__dirname, 'build/client');
+          
+          configFiles.forEach(file => {
+            const src = resolve(__dirname, 'public', file);
+            const dest = resolve(buildDir, file);
+            
+            if (existsSync(src)) {
+              try {
+                copyFileSync(src, dest);
+                console.log(`Copied ${file} to build/client`);
+              } catch (error) {
+                console.warn(`Failed to copy ${file}:`, error);
+              }
+            }
+          });
         },
       },
       config.mode !== 'test' && remixCloudflareDevProxy(),

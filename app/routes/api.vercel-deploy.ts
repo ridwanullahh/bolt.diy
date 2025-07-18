@@ -279,6 +279,7 @@ export async function action({ request }: ActionFunctionArgs) {
       if (!createProjectResponse.ok) {
         const errorData = (await createProjectResponse.json()) as any;
         console.error('Failed to create Vercel project:', errorData);
+
         return json(
           { error: `Failed to create project: ${errorData.error?.message || 'Unknown error'}` },
           { status: 400 },
@@ -427,6 +428,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!deployResponse.ok) {
       const errorData = (await deployResponse.json()) as any;
       console.error('Failed to create Vercel deployment:', errorData);
+
       return json(
         { error: `Failed to create deployment: ${errorData.error?.message || 'Unknown error'}` },
         { status: 400 },

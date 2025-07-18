@@ -81,7 +81,6 @@ export default defineConfig((config) => {
       UnoCSS(),
       tsconfigPaths(),
       chrome129IssuePlugin(),
-      isProduction && optimizeCssModules({ apply: 'build' }),
     ].filter(Boolean),
     envPrefix: [
       'VITE_',

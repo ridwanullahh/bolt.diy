@@ -11,6 +11,10 @@ import { resolve } from 'path';
 dotenv.config();
 
 export default defineConfig((config) => {
+  const isProduction = config.mode === 'production';
+  const isVercelBuild = process.env.VERCEL === '1';
+  const isDev = config.mode === 'development';
+  
   return {
     define: {
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
@@ -31,7 +35,7 @@ export default defineConfig((config) => {
       }),
       {
         name: 'buffer-polyfill',
-        transform(code, id) {
+        transform(code: string, id: string) {
           if (id.includes('env.mjs')) {
             return {
               code: `import { Buffer } from 'buffer';\n${code}`,
@@ -64,7 +68,8 @@ export default defineConfig((config) => {
           });
         },
       },
-      config.mode !== 'test' && remixCloudflareDevProxy(),
+      // Only load Cloudflare proxy during development and when not building for Vercel
+      isDev && !isVercelBuild && remixCloudflareDevProxy(),
       remixVitePlugin({
         future: {
           v3_fetcherPersist: true,
@@ -76,8 +81,8 @@ export default defineConfig((config) => {
       UnoCSS(),
       tsconfigPaths(),
       chrome129IssuePlugin(),
-      config.mode === 'production' && optimizeCssModules({ apply: 'build' }),
-    ],
+      isProduction && optimizeCssModules({ apply: 'build' }),
+    ].filter(Boolean),
     envPrefix: [
       'VITE_',
       'OPENAI_LIKE_API_BASE_URL',

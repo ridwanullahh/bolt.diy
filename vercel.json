@@ -1,19 +1,7 @@
 {
-  "buildCommand": "pnpm run build",
-  "outputDirectory": "build/client",
-  "installCommand": "pnpm install",
   "framework": "remix",
-  "functions": {
-    "build/server/index.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/((?!build/).*)",
-      "destination": "/build/server/index.js"
-    }
-  ],
+  "buildCommand": "pnpm run build",
+  "installCommand": "pnpm install",
   "headers": [
     {
       "source": "/build/(.*)",

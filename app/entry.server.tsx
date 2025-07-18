@@ -4,7 +4,7 @@ import { isbot } from 'isbot';
 import { renderToReadableStream } from 'react-dom/server';
 import { renderHeadToString } from 'remix-island';
 import { Head } from './root';
-import { themeStore } from '~/lib/stores/theme';
+import { themeStore, DEFAULT_THEME } from '~/lib/stores/theme';
 
 export default async function handleRequest(
   request: Request,
@@ -25,38 +25,54 @@ export default async function handleRequest(
 
   const body = new ReadableStream({
     start(controller) {
-      const head = renderHeadToString({ request, remixContext, Head });
+      try {
+        const head = renderHeadToString({ request, remixContext, Head });
 
-      controller.enqueue(
-        new Uint8Array(
-          new TextEncoder().encode(
-            `<!DOCTYPE html><html lang="en" data-theme="${themeStore.value}"><head>${head}</head><body><div id="root" class="w-full h-full">`,
+        // Safely get theme value with fallback for serverless environment
+        let theme = DEFAULT_THEME;
+
+        try {
+          theme = themeStore.get() || DEFAULT_THEME;
+        } catch (error) {
+          console.warn('Failed to get theme from store, using default:', error);
+          theme = DEFAULT_THEME;
+        }
+
+        controller.enqueue(
+          new Uint8Array(
+            new TextEncoder().encode(
+              `<!DOCTYPE html><html lang="en" data-theme="${theme}"><head>${head}</head><body><div id="root" class="w-full h-full">`,
+            ),
           ),
-        ),
-      );
+        );
 
-      const reader = readable.getReader();
+        const reader = readable.getReader();
 
-      function read() {
-        reader
-          .read()
-          .then(({ done, value }) => {
-            if (done) {
-              controller.enqueue(new Uint8Array(new TextEncoder().encode('</div></body></html>')));
-              controller.close();
+        function read() {
+          reader
+            .read()
+            .then(({ done, value }) => {
+              if (done) {
+                controller.enqueue(new Uint8Array(new TextEncoder().encode('</div></body></html>')));
+                controller.close();
 
-              return;
-            }
+                return;
+              }
 
-            controller.enqueue(value);
-            read();
-          })
-          .catch((error) => {
-            controller.error(error);
-            readable.cancel();
-          });
+              controller.enqueue(value);
+              read();
+            })
+            .catch((error) => {
+              console.error('Stream read error:', error);
+              controller.error(error);
+              readable.cancel();
+            });
+        }
+        read();
+      } catch (error) {
+        console.error('Error in stream start:', error);
+        controller.error(error);
       }
-      read();
     },
 
     cancel() {

@@ -29,6 +29,8 @@ import type { TextUIPart, FileUIPart, Attachment } from '@ai-sdk/ui-utils';
 import { useMCPStore } from '~/lib/stores/mcp';
 import type { LlmErrorAlertType } from '~/types/actions';
 
+declare const puter: any;
+
 const toastAnimation = cssTransition({
   enter: 'animated fadeInRight',
   exit: 'animated fadeOutRight',
@@ -441,6 +443,62 @@ export const ChatImpl = memo(
       }
 
       runAnimation();
+
+      if (provider.name === 'Puter') {
+        console.log('Using Puter.js client-side chat');
+
+        const userMessage: Message = {
+          id: `${Date.now()}`,
+          role: 'user',
+          content: finalMessageContent,
+          parts: createMessageParts(finalMessageContent, imageDataList),
+        };
+
+        const assistantMessageId = `${Date.now()}-assistant`;
+        const newMessages: Message[] = [
+          ...messages,
+          userMessage,
+          { id: assistantMessageId, role: 'assistant', content: '' },
+        ];
+        setMessages(newMessages);
+
+        try {
+          const chat_resp = await puter.ai.chat(finalMessageContent, { model: model, stream: true });
+
+          for await (const part of chat_resp) {
+            if (part?.text) {
+              setMessages((currentMessages) => {
+                const updatedMessages = [...currentMessages];
+                const assistantMsgIndex = updatedMessages.findIndex((m) => m.id === assistantMessageId);
+                if (assistantMsgIndex !== -1) {
+                  updatedMessages[assistantMsgIndex].content += part.text;
+                }
+                return updatedMessages;
+              });
+            }
+          }
+        } catch (e) {
+          console.error('Puter.js chat error:', e);
+          const errorMessage = e instanceof Error ? e.message : String(e);
+          setMessages((currentMessages) => {
+            const updatedMessages = [...currentMessages];
+            const assistantMsgIndex = updatedMessages.findIndex((m) => m.id === assistantMessageId);
+            if (assistantMsgIndex !== -1) {
+              updatedMessages[assistantMsgIndex].content = `Error: ${errorMessage}`;
+            }
+            return updatedMessages;
+          });
+        }
+
+        setInput('');
+        Cookies.remove(PROMPT_COOKIE_KEY);
+        setUploadedFiles([]);
+        setImageDataList([]);
+        resetEnhancer();
+        textareaRef.current?.blur();
+
+        return;
+      }
 
       if (!chatStarted) {
         setFakeLoading(true);

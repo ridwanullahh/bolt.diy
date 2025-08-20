@@ -130,15 +130,12 @@ export default class PuterProvider extends BaseProvider {
       defaultApiTokenKey: 'PUTER_API_KEY',
     });
 
-    if (!apiKey) {
-      throw new Error(`Missing API key for ${this.name} provider`);
-    }
 
     // Create a custom implementation for Puter.js integration
     return this.createPuterModel(model, apiKey);
   }
 
-  private createPuterModel(model: string, apiKey: string): LanguageModelV1 {
+  private createPuterModel(model: string, apiKey: string | undefined): LanguageModelV1 {
     // For now, we'll use a proxy approach that mimics the OpenAI interface
     // but internally uses Puter.js SDK
     const openai = createOpenAI({

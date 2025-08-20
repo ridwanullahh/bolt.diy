@@ -6,7 +6,17 @@ export * from './Button';
 export * from './Card';
 export * from './Checkbox';
 export * from './Collapsible';
-export * from './Dialog';
+export {
+  Dialog,
+  DialogRoot,
+  DialogClose,
+  DialogTitle,
+  DialogDescription,
+  DialogButton,
+  ConfirmationDialog,
+  SelectionDialog,
+} from './Dialog';
+export type { ConfirmationDialogProps, SelectionDialogProps } from './Dialog';
 export * from './IconButton';
 export * from './Input';
 export * from './Label';

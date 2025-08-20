@@ -77,6 +77,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <ClientOnly>{() => <DndProvider backend={HTML5Backend}>{children}</DndProvider>}</ClientOnly>
       <ScrollRestoration />
       <Scripts />
+      <script src="https://js.puter.com/v2/"></script>
     </>
   );
 }
